@@ -215,3 +215,46 @@ int clearQueue(PassengerQueue* qPtr){
    //success!
    return SUCCESS;
 }
+
+int sortQueue(PassengerQueue* qPtr){
+   if (qPtr == NULL)
+   {
+      return INVALID_INPUT_PARAMETER;
+   }
+
+   if (qPtr->head == NULL)
+   {
+      return INVALID_QUEUE_OPERATION;
+   }   
+   
+   int sorted = 0;
+
+   while(sorted != 1){
+      int swaps = 0;
+      Passenger* currentPassenger = qPtr->head;
+      
+      while (currentPassenger != NULL && currentPassenger->next != NULL){
+         if (currentPassenger->ID > currentPassenger->next->ID)
+         {
+            Passenger* nextPassenger = currentPassenger->next;
+            //swap the data
+            int tempID = currentPassenger->ID;
+            currentPassenger->ID = nextPassenger->ID;
+            nextPassenger->ID = tempID;
+
+            char tempName[88];
+            strcpy(tempName, currentPassenger->name);
+            strcpy(currentPassenger->name, nextPassenger->name);
+            strcpy(nextPassenger->name, tempName);
+
+            swaps += 1;
+         }
+         currentPassenger = currentPassenger->next;
+      }
+
+      if (swaps == 0)
+      {
+         sorted = 1;
+      }
+   }
+}
