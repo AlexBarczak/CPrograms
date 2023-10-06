@@ -222,16 +222,17 @@ int main()
 		printf("..queue cleared successfully!\n\n");		
 	}
 
-	/**
-	 * If you have implemented the sort() function, you could try a separate test for that
-	 * PassengerQueue *pQueue2 = createQueue();
-	 * addPassenger(pQueue2, 22, "passenger22", 0);
-	 * addPassenger(pQueue2, 12, "passenger12", 0);
-	 * addPassenger(pQueue2, 56, "passenger56", 0);
-	 * addPassenger(pQueue2, 2, "passenger2", 0);
-	 * addPassenger(pQueue2, 9, "passenger9", 0);
-	 * sortQueue(pQueue2);
-	*/
+	
+	 //If you have implemented the sort() function, you could try a separate test for that
+	 PassengerQueue *pQueue2 = createQueue();
+	 addPassenger(pQueue2, 22, "passenger22", 0);
+	 addPassenger(pQueue2, 12, "passenger12", 0);
+	 addPassenger(pQueue2, 56, "passenger56", 0);
+	 addPassenger(pQueue2, 2, "passenger2", 0);
+	 addPassenger(pQueue2, 9, "passenger9", 0);
+	 sortQueue(pQueue2);
+	 displayQueue(pQueue);
+	
 
 	/**
 	 * Try adding some INPUT VALIDATION / error-checking tests if you want, 
