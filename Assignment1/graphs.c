@@ -473,6 +473,8 @@ int doDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int sta
     return SUCCESS;
 }
 
+// my implementation of Dijsktra's algorithm in an elegant and recursive manner, since there were no
+// strict instructions on how to implement it
 void recDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int currentNode){
 
     // loop throught the adjacency row to see all adjacent nodes
