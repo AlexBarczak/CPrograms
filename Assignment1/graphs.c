@@ -41,6 +41,7 @@
  */
 #include <stdio.h>  // required for access to file input-output functions in C
 #include <stdlib.h> // may be required for access to memory allocation functions
+#include <string.h> // used for the strtok function
 #include "graphs.h" // required, to include the Graph data structures and function declarations
 
 // I wanted to do depth traversal using recursion but later noticed that you have made it
@@ -287,12 +288,6 @@ int doDepthFirstTraversal(AdjacencyMatrix *pMatrix, int startingNode, int traver
     } 
     #endif
 
-    printf("\n\ntraversal order\n");
-    for(int i = 0; i < NUMBER_OF_VERTICES; i++){
-        printf("%d", traversalOutput[i]);
-    }
-    printf("\n\n");
-
     return SUCCESS;
 }
 
@@ -326,6 +321,7 @@ void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visit
 }
 #endif
 
+// function simply checks for the presence of a value in the array and returns true or false
 int isInArray(int value, int* array, int arraySize){
     for (int ii = 0; ii < arraySize; ii++)
     {
@@ -369,14 +365,59 @@ int isInArray(int value, int* array, int arraySize){
  */
 int loadMatrixFromFile(AdjacencyMatrix *pMatrix, char filename[])
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pMatrix;
-    (void)filename;
+    // perform input validation
+    //
+    // validate pMatrix is a valid pointer
+    if (pMatrix == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    
+    // try to open the file
+    FILE *fp;
+    // open the file for reading
+    fp = fopen(filename, "r");
+    if (fp == NULL){
+        // throw error if filename is invalid
+        return INVALID_INPUT_PARAMETER;
+    }
 
-    // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    // set variables for strtok function
+    char line[256];
+    char delimiter[] = " ";
+    char *sWeight;
+
+    // which row do we write to
+    int srcIndex = 0;
+    int destIndex = 0;
+    
+
+    while (fgets(line, 256, fp) != NULL){
+        // get the first value
+        sWeight = strtok(line, delimiter);
+        // convert the value from char[] format to int
+        int weight = atoi(sWeight);
+
+        while(sWeight != NULL){
+            // get the next value
+            
+            // convert the value from char[] format to int
+            int weight = atoi(sWeight);
+
+            pMatrix->matrix[srcIndex][destIndex] = weight;
+
+            sWeight = strtok(NULL, delimiter);
+
+            // increment the index of the destination
+            destIndex++;
+        }
+        // increment the index of the src and reset dest
+        srcIndex++;
+        destIndex = 0;
+    }
+
+    fclose(fp);
+
+    return SUCCESS;
 }
 
 /**
