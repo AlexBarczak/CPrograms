@@ -37,6 +37,16 @@
 #include <stdlib.h> // may be required for access to memory allocation functions
 #include "graphs.h" // required, to include the Graph data structures and function declarations
 
+// I wanted to do depth traversal using recursion but later noticed that you have made it
+// state mandated to ues your method which i find unpleasant
+//#define RECURSIVE_DEPTH_TRAVERSAL
+
+#ifdef RECURSIVE_DEPTH_TRAVERSAL
+    void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visitedNodes[]);
+#endif
+
+int isInArray(int value, int* array, int arraySize);
+
 /** #### FUNCTION IMPLEMENTATIONS ## */
 
 
@@ -117,15 +127,58 @@ int addEdge(AdjacencyMatrix *pMatrix, int src, int dest, int weight)
  */
 int addEdges(AdjacencyMatrix *pMatrix, Edge edges[], int edgeNum)
 { 
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pMatrix;
-    (void)edges;
-    (void)edgeNum;
+    // perform input validation
+    //
+    // pMatrix must be a valid pointer and not null
+    if (pMatrix == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    
+    // edges must not be a null pointer to an array
+    if (edges == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    
+    // if edges is valid, so is edgenum, therefore don't need to validate it
 
-    // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    // if all the edges are added successfully, return success
+    // if some are added successfully and others not, return partial success
+    // if none are added successfully, return invalid input
+    //
+    // to know which of these is the case we need to keep track of the number of 
+    // successful (or unsuccessful) operations made
+
+    int successful_edge_additions = 0;
+
+
+    // make a for loop going through the edges array and attempt to add them
+    // to the matrix provided
+    for (int ii = 0; ii < edgeNum; ii++){
+        int result = addEdge(pMatrix, edges[ii].src, edges[ii].dest, edges[ii].weight);
+        
+        // if the addition of the edge went fine, add it to the count
+        if (result == SUCCESS){
+            successful_edge_additions++;
+        }
+    }
+
+    // now all the valid edges should be added and we can check 
+    // if the number of edges added succesfully equals the number of edges
+    if (successful_edge_additions == edgeNum){
+        // all the additions were successful
+        return SUCCESS;
+    }
+
+    // if none of the edges were added successfully
+    if (successful_edge_additions == 0)
+    {
+        // input was invalid
+        return INVALID_INPUT_PARAMETER;
+    }
+
+    // otherwise it means some edges were valid and some were not
+    return PARTIAL_SUCCESS;
+    
 }
 
 /**
@@ -145,16 +198,83 @@ int addEdges(AdjacencyMatrix *pMatrix, Edge edges[], int edgeNum)
  */
 int doDepthFirstTraversal(AdjacencyMatrix *pMatrix, int startingNode, int traversalOutput[])
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pMatrix;
-    (void)startingNode;
-    (void)traversalOutput;
+    // perform input validation
+    //
+    // pMatrix must be a valid pointer and not null
+    if (pMatrix == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
 
-    // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    // starting node must be a node within the graph
+    if (startingNode > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+    
+    // traversal output must not be a null pointer
+    if (traversalOutput == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
 
+    // the starting node is already visited
+    traversalOutput[0] = startingNode;
+
+    #ifdef RECURSIVE_DEPTH_TRAVERSAL
+    for (int ii = 1; ii < NUMBER_OF_VERTICES; ii++){
+        traversalOutput[ii] = -1;
+    }
+    recDepthFirstTraversal(pMatrix, startingNode, traversalOutput);
+    #endif
+
+    #ifndef RECURSIVE_DEPTH_TRAVERSAL
+
+    #endif
+
+    return SUCCESS;
+}
+
+#ifdef RECURSIVE_DEPTH_TRAVERSAL
+
+void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visitedNodes[]){
+    // all passed in values have already been checked for validity in doDepthFirstTraversal
+    // therefore validation not necessary
+
+    // start looping through the node's adjacency row
+    for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        // check if node is not connected to node ii
+        if(pMatrix->matrix[currentNode][ii] == 0){
+            continue;
+        }
+
+        // if the node is connected then check if it has been visited   
+        if (isInArray(ii, visitedNodes, NUMBER_OF_VERTICES) == 1){
+            continue;
+        }
+
+        // if you reach here then node ii has not been visited and is connected to the current node
+        // meaning we can add it to teh traversed nodes and then call the recursion function again
+        for (int jj = 1; jj < NUMBER_OF_VERTICES; jj++){
+            if (visitedNodes[jj] == -1){
+                visitedNodes[jj] = ii;
+                recDepthFirstTraversal(pMatrix, ii, visitedNodes);
+                break;
+            }
+        }
+    }
+}
+
+#endif
+
+int isInArray(int value, int* array, int arraySize){
+    for (int ii = 0; ii < arraySize; ii++)
+    {
+        if (value == array[ii]){
+            // item is in array
+            return 1;
+        }
+    }
+
+    // item not in array
+    return 0;    
 }
 
 /**
