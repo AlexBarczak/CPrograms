@@ -51,10 +51,10 @@
 AdjacencyMatrix* createAdjacencyMatrix(int defaultEdgeValue)
 {
     // attempt to allocate memory for the matrix
-    AdjacencyMatrix* graph = myMalloc(sizeof(AdjacencyMatrix)); 
+    AdjacencyMatrix* pGraph = myMalloc(sizeof(AdjacencyMatrix)); 
 
     // check if value is null in the case of no memory being available and return error code if so
-    if (graph == NULL){
+    if (pGraph == NULL){
         return NULL;
     }
     
@@ -68,12 +68,12 @@ AdjacencyMatrix* createAdjacencyMatrix(int defaultEdgeValue)
         //for each edge from vertice
         for(int jj = 0; jj < NUMBER_OF_VERTICES; jj ++){
             //set edge value to the default value
-            graph->matrix[ii][jj] = defaultEdgeValue;
+            pGraph->matrix[ii][jj] = defaultEdgeValue;
         }
     }
 
     // returning NOT_IMPLEMENTED until your own implementation is provided
-    return graph;
+    return pGraph;
 }
 
 /**
@@ -85,16 +85,27 @@ AdjacencyMatrix* createAdjacencyMatrix(int defaultEdgeValue)
  */
 int addEdge(AdjacencyMatrix *pMatrix, int src, int dest, int weight)
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pMatrix;
-    (void)src;
-    (void)dest;
-    (void)weight;
+    // perform input validation
+    //
+    //validate pMatrix is a valid pointer
+    if (pMatrix == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
 
-    // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    // validate src and dest as not being greater than the vertice count or less than 0
+    if (src > NUMBER_OF_VERTICES || src < 0){
+        return INVALID_INPUT_PARAMETER;
+    }
+    if (dest > NUMBER_OF_VERTICES || dest < 0){
+        return INVALID_INPUT_PARAMETER;
+    }
+
+    // weight should not need validation, it's completely up to the user what they
+    // set the weight to and there's no limit spoken of
+    
+    pMatrix->matrix[src][dest] = weight;
+
+    return SUCCESS;
 }
 
 /**
