@@ -30,6 +30,12 @@
  * 
  */
 
+/**
+ * Author:                  Aleksander Barczak
+ * Matriculation Number:    2497555
+ * Date:                    21/10/2023
+*/
+
 /** 
  * ### INCLUDES
  */
@@ -42,10 +48,11 @@
 //#define RECURSIVE_DEPTH_TRAVERSAL
 
 #ifdef RECURSIVE_DEPTH_TRAVERSAL
-    void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visitedNodes[]);
+void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visitedNodes[]);
 #endif
-
 int isInArray(int value, int* array, int arraySize);
+
+
 
 /** #### FUNCTION IMPLEMENTATIONS ## */
 
@@ -215,25 +222,81 @@ int doDepthFirstTraversal(AdjacencyMatrix *pMatrix, int startingNode, int traver
         return INVALID_INPUT_PARAMETER;
     }
 
-    // the starting node is already visited
+    for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        traversalOutput[ii] = -1;
+    }    
+    //record the starting node as traversed
     traversalOutput[0] = startingNode;
+    
 
     #ifdef RECURSIVE_DEPTH_TRAVERSAL
-    for (int ii = 1; ii < NUMBER_OF_VERTICES; ii++){
-        traversalOutput[ii] = -1;
-    }
     recDepthFirstTraversal(pMatrix, startingNode, traversalOutput);
     #endif
 
-    #ifndef RECURSIVE_DEPTH_TRAVERSAL
+    // NOTE: I hate the following implementation, I find it despicable
+    // its only merit is that it has linear space complexity. Aside from that it is an ugly
+    // implementation that performs repeated comparisons when backtracking.
+    // I also despise the idea of manually altering loop variable from within 
+    // I wish this would have just been the recursive implementation I've made here
 
+    #ifndef RECURSIVE_DEPTH_TRAVERSAL
+    //define our stack to backtrack and a variable to keep track of the top 
+    int stack[NUMBER_OF_VERTICES];
+    int top = -1;
+
+    // current node is index of what we're starting with
+    int current_node = startingNode;
+
+    // loop through the current node's row in the adjacency list
+    for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        // is there an edge to node ii in the graph
+        if(pMatrix->matrix[current_node][ii] != 0){
+            // if there is an edge to node ii
+            // has that node ii been visited
+            if (isInArray(ii, traversalOutput, NUMBER_OF_VERTICES) == 1){
+                //nothing to do
+            }else{
+                //get ready to mode to node i in graph
+                //push current node onto the stack in case we need to backtrack
+                top++;
+                stack[top] = current_node;
+                //modify the current node to be node i one the graph (the new node / edge found above)
+                current_node = ii;
+                //record this new current node as being visited 
+                for (int jj = 1; jj < NUMBER_OF_VERTICES; jj++){
+                    if (traversalOutput[jj] == -1){
+                        traversalOutput[jj] = current_node;
+                        break;
+                    }
+                }
+            }
+        }else{
+            // have we reached the final element in this adjacency row?
+            if (ii == NUMBER_OF_VERTICES - 1){
+                // do we need to backtrack anywhere?
+                if (top != -1){
+                    // pop from stack and make it the current node
+                    current_node = stack[top];
+                    top--;
+                    // reset the loop
+                    // ii will be immediately incremented to 0
+                    ii = -1;
+                }
+            }
+        }
+    } 
     #endif
+
+    printf("\n\ntraversal order\n");
+    for(int i = 0; i < NUMBER_OF_VERTICES; i++){
+        printf("%d", traversalOutput[i]);
+    }
+    printf("\n\n");
 
     return SUCCESS;
 }
 
 #ifdef RECURSIVE_DEPTH_TRAVERSAL
-
 void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visitedNodes[]){
     // all passed in values have already been checked for validity in doDepthFirstTraversal
     // therefore validation not necessary
@@ -261,7 +324,6 @@ void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visit
         }
     }
 }
-
 #endif
 
 int isInArray(int value, int* array, int arraySize){
@@ -272,10 +334,10 @@ int isInArray(int value, int* array, int arraySize){
             return 1;
         }
     }
-
     // item not in array
     return 0;    
 }
+
 
 /**
  * This function will receive the name of a file on disk which contains the 
