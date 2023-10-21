@@ -50,13 +50,30 @@
  */
 AdjacencyMatrix* createAdjacencyMatrix(int defaultEdgeValue)
 {
-    // a void cast to prevent 'unused variable warning'
-    // remove the following line of code when you have 
-    // implemented the function yourself
-    (void)defaultEdgeValue;
+    // attempt to allocate memory for the matrix
+    AdjacencyMatrix* graph = myMalloc(sizeof(AdjacencyMatrix)); 
+
+    // check if value is null in the case of no memory being available and return error code if so
+    if (graph == NULL){
+        return NULL;
+    }
+    
+    // assign the default edge value to each position in the matrix
+    // as the number of vertices in all the matrixes is a constant this implementation can hold,
+    // if the size were dynamic, I'd have to play around with sizeof a whol bunch of time
+    // to not go out of bounds
+    //
+    // for each vertice
+    for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        //for each edge from vertice
+        for(int jj = 0; jj < NUMBER_OF_VERTICES; jj ++){
+            //set edge value to the default value
+            graph->matrix[ii][jj] = defaultEdgeValue;
+        }
+    }
 
     // returning NOT_IMPLEMENTED until your own implementation is provided
-    return NULL;
+    return graph;
 }
 
 /**
