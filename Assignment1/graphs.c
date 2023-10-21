@@ -53,6 +53,7 @@ void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visit
 #endif
 int isInArray(int value, int* array, int arraySize);
 
+void recDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int currentNode);
 
 
 /** #### FUNCTION IMPLEMENTATIONS ## */
@@ -378,7 +379,7 @@ int loadMatrixFromFile(AdjacencyMatrix *pMatrix, char filename[])
     fp = fopen(filename, "r");
     if (fp == NULL){
         // throw error if filename is invalid
-        return INVALID_INPUT_PARAMETER;
+        return FILE_IO_ERROR;
     }
 
     // set variables for strtok function
@@ -436,17 +437,93 @@ int loadMatrixFromFile(AdjacencyMatrix *pMatrix, char filename[])
  */
 int doDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int startNode)
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pMatrix;
-    (void)pTable;
-    (void)startNode;
+    // perform input validation
+    //
+    // validate pMatrix is a valid pointer
+    if (pMatrix == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+
+    // validate pTable is a valid pointer
+    if (pTable == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+
+    //start node must be between 0 and the number of vertices 
+    if (startNode < 0 || startNode > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+    
+    // initialise our Dijlstra table
+    for (int i = 0; i < NUMBER_OF_VERTICES; i++){
+        pTable->table[i].visited = false;
+        pTable->table[i].distance = VERY_LARGE_NUMBER;
+        pTable->table[i].predecessor = -1;
+    }
+
+    int currentNode = startNode;
+    
+    // initialise distance to starting node as 0
+    pTable->table[currentNode].distance = 0;
+
+    // use recursion to fill the table
+    recDijsktraAlgorithm(pMatrix, pTable, startNode);
 
     // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    return SUCCESS;
 }
 
+void recDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int currentNode){
+
+    // loop throught the adjacency row to see all adjacent nodes
+    for(int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        // if there is no edge to the node ii, ignore it
+        int edgeToII = pMatrix->matrix[currentNode][ii];
+        if(edgeToII == 0){
+            continue;
+        }
+        // if there is an edge check if it has been visited, if it has been, ignore it
+        if(pTable->table[ii].visited == true){
+            continue;
+        }
+
+        // process the edge
+        //
+        // if the distance across the edge + the distance to the current node is longer than the recorded distance
+        int distanceToII = pTable->table[currentNode].distance + edgeToII;
+        if( distanceToII < pTable->table[ii].distance){
+            pTable->table[ii].distance = distanceToII;
+            pTable->table[ii].predecessor = currentNode;
+        }
+    }
+
+    // mark this node as visited
+    pTable->table[currentNode].visited = true;
+    
+    // find the next node to process, by searching the table and picking the unvisited node with the shortest distance
+    // if all nodes have been visited then all connections have been processed and we can let the recursion collapse
+    int shortestDistance = VERY_LARGE_NUMBER;
+    int closestNode = -1;
+    for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        // find the closest unvisited node
+        if (pTable->table[ii].visited == true){
+            continue;
+        }
+        if (pTable->table[ii].distance < shortestDistance)
+        {
+            // node found, set closest node to this and update shortest distance
+            shortestDistance = pTable->table[ii].distance;
+            closestNode = ii;
+        }
+        
+    }
+
+    // if call this function on the closest node
+    if (closestNode != -1){
+        recDijsktraAlgorithm(pMatrix, pTable, closestNode);
+    }
+    return;
+}
 
 /**
  * This function should determine the shortest path that exists on a graph 
