@@ -567,25 +567,19 @@ int findShortestPathTo(DijkstraTable *pTable, int nodeFrom, int nodeTo, int path
     int index = 0;
     pathFound[0] = nodeTo;
     // call the recursive function to add each predecessor until the target is reached
-    recFindShortestPath(pTable, nodeTo, nodeFrom, pathFound, index);
-
-    printf("\n\npath found: \n");
-    for (int i = 0; i < NUMBER_OF_VERTICES; i++){
-        printf("%d ", pathFound[i]);
-    }
-    printf("\n");
-    
+    recFindShortestPath(pTable, nodeTo, nodeFrom, pathFound, index);   
 
     // returning NOT_IMPLEMENTED until your own implementation provided
     return SUCCESS;
 }
 
-// recursion to the rescue once again
+// recursion to the rescue once again,
+// use recursion to travel down the predecessors until we run out of predecessors or reach the target
+// and update the pathfound array at each step
 void recFindShortestPath(DijkstraTable *pTable, int currentNode, int targetNode, int pathFound[], int index){
     
     // if we've reached the target node or there is no more path
     if (pTable->table[currentNode].predecessor == -1 || currentNode == targetNode){
-        printf("node on exit: %d", currentNode);
         return;
     }
 
