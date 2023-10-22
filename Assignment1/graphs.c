@@ -115,10 +115,10 @@ int addEdge(AdjacencyMatrix *pMatrix, int src, int dest, int weight)
     }
 
     // validate src and dest as not being greater than the vertice count or less than 0
-    if (src > NUMBER_OF_VERTICES || src < 0){
+    if (src > NUMBER_OF_VERTICES -1 || src < 0){
         return INVALID_INPUT_PARAMETER;
     }
-    if (dest > NUMBER_OF_VERTICES || dest < 0){
+    if (dest > NUMBER_OF_VERTICES -1 || dest < 0){
         return INVALID_INPUT_PARAMETER;
     }
 
@@ -218,7 +218,7 @@ int doDepthFirstTraversal(AdjacencyMatrix *pMatrix, int startingNode, int traver
     }
 
     // starting node must be a node within the graph
-    if (startingNode > NUMBER_OF_VERTICES){
+    if (startingNode < 0 || startingNode > NUMBER_OF_VERTICES - 1){
         return INVALID_INPUT_PARAMETER;
     }
     
@@ -453,11 +453,11 @@ int doDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int sta
     }
 
     //start node must be between 0 and the number of vertices 
-    if (startNode < 0 || startNode > NUMBER_OF_VERTICES){
+    if (startNode < 0 || startNode > NUMBER_OF_VERTICES - 1){
         return INVALID_INPUT_PARAMETER;
     }
     
-    // initialise our Dijlstra table
+    // initialise our Dijkstra table
     for (int i = 0; i < NUMBER_OF_VERTICES; i++){
         pTable->table[i].visited = false;
         pTable->table[i].distance = VERY_LARGE_NUMBER;
@@ -554,10 +554,10 @@ int findShortestPathTo(DijkstraTable *pTable, int nodeFrom, int nodeTo, int path
         return INVALID_INPUT_PARAMETER;
     }
     // validate nodes from and to are between 0 and number of vertices
-    if (nodeFrom < 0 || nodeFrom > NUMBER_OF_VERTICES){
+    if (nodeFrom < 0 || nodeFrom > NUMBER_OF_VERTICES - 1){
         return INVALID_INPUT_PARAMETER;
     }
-    if (nodeTo < 0 || nodeTo > NUMBER_OF_VERTICES){
+    if (nodeTo < 0 || nodeTo > NUMBER_OF_VERTICES - 1){
         return INVALID_INPUT_PARAMETER;
     }
     //validate that pathFound is not NULL
@@ -615,10 +615,10 @@ int addEdgeToAdjacencyList(AdjacencyList *pList, int src, int dest, int weight)
         return INVALID_INPUT_PARAMETER;
     }
     // src and destination must be between 0 and the number of vertices
-    if (src < 0 || src > NUMBER_OF_VERTICES){
+    if (src < 0 || src > NUMBER_OF_VERTICES - 1){
         return INVALID_INPUT_PARAMETER;
     }
-    if (dest < 0 || dest > NUMBER_OF_VERTICES){
+    if (dest < 0 || dest > NUMBER_OF_VERTICES - 1){
         return INVALID_INPUT_PARAMETER;
     }
     
@@ -760,16 +760,22 @@ int doDijsktraAlgorithmOnAdjacencyList(AdjacencyList *pList, DijkstraTable *pTab
     if (pTable == NULL){
         return INVALID_INPUT_PARAMETER;
     }
-    //start node must be between zero and the number of vertices
-    if (startNode < 0 || startNode > NUMBER_OF_VERTICES){
+
+    // initialise our Dijkstra table
+    for (int i = 0; i < NUMBER_OF_VERTICES; i++){
+        pTable->table[i].visited = false;
+        pTable->table[i].distance = VERY_LARGE_NUMBER;
+        pTable->table[i].predecessor = -1;
+    }
+
+    //start node must be between zero and the number of vertices -1
+    if (startNode < 0 || startNode > NUMBER_OF_VERTICES - 1){
         return INVALID_INPUT_PARAMETER;
     }
 
-    printf("setting starting node\n"); 
     // set the start node in the table to be of distance 0
     pTable->table[startNode].distance = 0;
 
-    printf("calling recursion\n"); 
     // call the recursive function to do the job
     recDijsktraAlgorithmOnAdjacencyList(pList, pTable, startNode);
 
@@ -788,17 +794,16 @@ void recDijsktraAlgorithmOnAdjacencyList(AdjacencyList *pList, DijkstraTable *pT
     ListNode* pCurrentEdge = pList->adjacencyList[currentNode];
 
     while (true){
-        //printf("checking edge %d\n", pCurrentEdge->destNode);
         // have we checked the whole list?
         if (pCurrentEdge == NULL)
         {
             // mark this node as visited
             pTable->table[currentNode].visited = true;
-            // leave the loop
+            // leave the loop and move onto the next closest node
             break;
         }
-        // has this edge been visited?
-        if (pTable->table[pCurrentEdge->destNode].visited == true){
+        // has this edge been visited? can this node be processed?
+        if (pTable->table[pCurrentEdge->destNode].visited == true || pCurrentEdge->weight == 0){
             // skip it
             pCurrentEdge = pCurrentEdge->next;
             continue;
@@ -820,10 +825,11 @@ void recDijsktraAlgorithmOnAdjacencyList(AdjacencyList *pList, DijkstraTable *pT
     int shortestDistance = VERY_LARGE_NUMBER;
     int closestNode = -1;
     for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
-        // find the closest unvisited node
+        // find the closest unvisited node which is connected
         if (pTable->table[ii].visited == true){
             continue;
         }
+        // note: this also means that a node will never be used if its distance is VERY_LARGE_NUMBER
         if (pTable->table[ii].distance < shortestDistance)
         {
             // node found, set closest node to this and update shortest distance
