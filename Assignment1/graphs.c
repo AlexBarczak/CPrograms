@@ -33,7 +33,7 @@
 /**
  * Author:                  Aleksander Barczak
  * Matriculation Number:    2497555
- * Date:                    21/10/2023
+ * Date:                    21/10/2023 - 22/10/2023
 */
 
 /** 
@@ -569,6 +569,12 @@ int findShortestPathTo(DijkstraTable *pTable, int nodeFrom, int nodeTo, int path
     // call the recursive function to add each predecessor until the target is reached
     recFindShortestPath(pTable, nodeTo, nodeFrom, pathFound, index);   
 
+    // NOTE: recursive implementation really is not necessary, 
+    // it would have beeen enough to do it in a while loop checking that the 
+    // predecessor of the current node is not equal to -1 and using an incrementing value
+    // to add each current node to the pathFound at each loops cycle
+    // however... I like recursion
+
     // returning NOT_IMPLEMENTED until your own implementation provided
     return SUCCESS;
 }
@@ -600,16 +606,59 @@ void recFindShortestPath(DijkstraTable *pTable, int currentNode, int targetNode,
  */
 int addEdgeToAdjacencyList(AdjacencyList *pList, int src, int dest, int weight)
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pList;
-    (void)src;
-    (void)dest;
-    (void)weight;
+    // perform validation checks
+    //
+    // pList must not be NULL
+    if (pList == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    // src and destination must be between 0 and the number of vertices
+    if (src < 0 || src > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+    if (dest < 0 || dest > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+    
+    // what if the edge already exists? a basic implementation could cause multiple links to
+    // a single node with differing weights, the list needs to be first checked
 
-    // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    ListNode* pCurrentEdge = pList->adjacencyList[src];
+
+    // check the current nodes to prevent repeats of edges
+    while (true){
+        // have we checked the whole list?
+        if (pCurrentEdge == NULL)
+        {
+            break;
+        }
+        // is this the edge we seek?
+        if (pCurrentEdge->destNode == dest){
+            pCurrentEdge->weight = weight;
+            return SUCCESS;
+        }
+        
+        // try the next edge in the list
+        pCurrentEdge = pCurrentEdge->next;
+    }
+
+    // edge does not exist, create the list node for it
+    ListNode* pNewEdge = NULL;
+    pNewEdge = myMalloc(sizeof(ListNode));
+    // if there's no memory, cannot do it
+    if(pNewEdge == NULL){
+        return MEMORY_ALLOCATION_ERROR;
+    }    
+
+    // set this edges next data to the current head node
+    pNewEdge->next = pList->adjacencyList[src];
+    // place this node at the head
+    pList->adjacencyList[src] = pNewEdge;
+    // set this edges data
+    pNewEdge->destNode = dest;
+    pNewEdge->weight = weight;
+
+    return SUCCESS;
 }
 
 
