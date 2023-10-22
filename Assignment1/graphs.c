@@ -685,14 +685,39 @@ int addEdgeToAdjacencyList(AdjacencyList *pList, int src, int dest, int weight)
  */
 int populateAdjacencyList(AdjacencyList *pList, AdjacencyMatrix *pMatrix)
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pList;
-    (void)pMatrix;
+    // perform validation checks
+    //
+    // pList must not be NULL
+    if (pList == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    // pMatric must not be NULL
+    if (pMatrix == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
 
-    // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    // add each edge to the list, and keep track of successfull additions
+    int edgeAddFailures = 0;
+    for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        for (int jj = 0; jj < NUMBER_OF_VERTICES; jj++){
+            int result = addEdgeToAdjacencyList(pList, ii, jj, pMatrix->matrix[ii][jj]);
+            // if it failed for whatever reason, note it down
+            if (result != SUCCESS){edgeAddFailures++;}
+        }
+    }
+
+    // if all was fine, success
+    if(edgeAddFailures == 0){
+        return SUCCESS;
+    }
+
+    // if all were fails
+    if (edgeAddFailures == NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+
+    // if some were fine, partial success
+    return PARTIAL_SUCCESS;
 }
 
 /**
