@@ -54,6 +54,7 @@ void recDepthFirstTraversal(AdjacencyMatrix *pMatrix, int currentNode, int visit
 int isInArray(int value, int* array, int arraySize);
 
 void recDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int currentNode);
+void recFindShortestPath(DijkstraTable *pTable, int targetNode, int currentNode, int pathFound[], int index);
 
 
 /** #### FUNCTION IMPLEMENTATIONS ## */
@@ -544,18 +545,56 @@ void recDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int c
  */
 int findShortestPathTo(DijkstraTable *pTable, int nodeFrom, int nodeTo, int pathFound[])
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pTable;
-    (void)nodeFrom;
-    (void)nodeTo;
-    (void)pathFound;
+    // perform input validation
+    //
+    // validate pTable is a valid pointer
+    if (pTable == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    // validate nodes from and to are between 0 and number of vertices
+    if (nodeFrom < 0 || nodeFrom > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+    if (nodeTo < 0 || nodeTo > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+    //validate that pathFound is not NULL
+    if (pathFound == NULL){
+        return INVALID_INPUT_PARAMETER;
+    } 
+    
+    // set the current index in pathfound to 0 for the 'top' value
+    int index = 0;
+    pathFound[0] = nodeTo;
+    // call the recursive function to add each predecessor until the target is reached
+    recFindShortestPath(pTable, nodeTo, nodeFrom, pathFound, index);
+
+    printf("\n\npath found: \n");
+    for (int i = 0; i < NUMBER_OF_VERTICES; i++){
+        printf("%d ", pathFound[i]);
+    }
+    printf("\n");
+    
 
     // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    return SUCCESS;
 }
 
+// recursion to the rescue once again
+void recFindShortestPath(DijkstraTable *pTable, int currentNode, int targetNode, int pathFound[], int index){
+    
+    // if we've reached the target node or there is no more path
+    if (pTable->table[currentNode].predecessor == -1 || currentNode == targetNode){
+        printf("node on exit: %d", currentNode);
+        return;
+    }
+
+    // increment index, add the current nodes predecessor to pathfound and call again
+    pathFound[index+1] = pTable->table[currentNode].predecessor;
+    currentNode = pTable->table[currentNode].predecessor;
+    recFindShortestPath(pTable, currentNode, targetNode, pathFound, index+1);
+    return;
+}
 
 /**
  * This function should add a new edge into the AdjacencyList provided, based on 
