@@ -33,7 +33,7 @@
 /**
  * Author:                  Aleksander Barczak
  * Matriculation Number:    2497555
- * Date:                    21/10/2023
+ * Date:                    21/10/2023 - 22/10/2023
 */
 
 /** 
@@ -55,6 +55,8 @@ int isInArray(int value, int* array, int arraySize);
 
 void recDijsktraAlgorithm(AdjacencyMatrix *pMatrix, DijkstraTable *pTable, int currentNode);
 void recFindShortestPath(DijkstraTable *pTable, int targetNode, int currentNode, int pathFound[], int index);
+
+void recDijsktraAlgorithmOnAdjacencyList(AdjacencyList *pList, DijkstraTable *pTable, int currentNode);
 
 
 /** #### FUNCTION IMPLEMENTATIONS ## */
@@ -569,6 +571,12 @@ int findShortestPathTo(DijkstraTable *pTable, int nodeFrom, int nodeTo, int path
     // call the recursive function to add each predecessor until the target is reached
     recFindShortestPath(pTable, nodeTo, nodeFrom, pathFound, index);   
 
+    // NOTE: recursive implementation really is not necessary, 
+    // it would have beeen enough to do it in a while loop checking that the 
+    // predecessor of the current node is not equal to -1 and using an incrementing value
+    // to add each current node to the pathFound at each loops cycle
+    // however... I like recursion
+
     // returning NOT_IMPLEMENTED until your own implementation provided
     return SUCCESS;
 }
@@ -600,16 +608,59 @@ void recFindShortestPath(DijkstraTable *pTable, int currentNode, int targetNode,
  */
 int addEdgeToAdjacencyList(AdjacencyList *pList, int src, int dest, int weight)
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pList;
-    (void)src;
-    (void)dest;
-    (void)weight;
+    // perform validation checks
+    //
+    // pList must not be NULL
+    if (pList == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    // src and destination must be between 0 and the number of vertices
+    if (src < 0 || src > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+    if (dest < 0 || dest > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+    
+    // what if the edge already exists? a basic implementation could cause multiple links to
+    // a single node with differing weights, the list needs to be first checked
 
-    // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    ListNode* pCurrentEdge = pList->adjacencyList[src];
+
+    // check the current nodes to prevent repeats of edges
+    while (true){
+        // have we checked the whole list?
+        if (pCurrentEdge == NULL)
+        {
+            break;
+        }
+        // is this the edge we seek?
+        if (pCurrentEdge->destNode == dest){
+            pCurrentEdge->weight = weight;
+            return SUCCESS;
+        }
+        
+        // try the next edge in the list
+        pCurrentEdge = pCurrentEdge->next;
+    }
+
+    // edge does not exist, create the list node for it
+    ListNode* pNewEdge = NULL;
+    pNewEdge = myMalloc(sizeof(ListNode));
+    // if there's no memory, cannot do it
+    if(pNewEdge == NULL){
+        return MEMORY_ALLOCATION_ERROR;
+    }    
+
+    // set this edges next data to the current head node
+    pNewEdge->next = pList->adjacencyList[src];
+    // place this node at the head
+    pList->adjacencyList[src] = pNewEdge;
+    // set this edges data
+    pNewEdge->destNode = dest;
+    pNewEdge->weight = weight;
+
+    return SUCCESS;
 }
 
 
@@ -636,14 +687,39 @@ int addEdgeToAdjacencyList(AdjacencyList *pList, int src, int dest, int weight)
  */
 int populateAdjacencyList(AdjacencyList *pList, AdjacencyMatrix *pMatrix)
 {
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pList;
-    (void)pMatrix;
+    // perform validation checks
+    //
+    // pList must not be NULL
+    if (pList == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    // pMatric must not be NULL
+    if (pMatrix == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
 
-    // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    // add each edge to the list, and keep track of successfull additions
+    int edgeAddFailures = 0;
+    for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        for (int jj = 0; jj < NUMBER_OF_VERTICES; jj++){
+            int result = addEdgeToAdjacencyList(pList, ii, jj, pMatrix->matrix[ii][jj]);
+            // if it failed for whatever reason, note it down
+            if (result != SUCCESS){edgeAddFailures++;}
+        }
+    }
+
+    // if all was fine, success
+    if(edgeAddFailures == 0){
+        return SUCCESS;
+    }
+
+    // if all were fails
+    if (edgeAddFailures == NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+
+    // if some were fine, partial success
+    return PARTIAL_SUCCESS;
 }
 
 /**
@@ -674,14 +750,92 @@ int populateAdjacencyList(AdjacencyList *pList, AdjacencyMatrix *pMatrix)
  * The function should return SUCCESS or an error code.
  */
 int doDijsktraAlgorithmOnAdjacencyList(AdjacencyList *pList, DijkstraTable *pTable, int startNode)
-{
-    // void casts to prevent 'unused variable warning'
-    // remove the following lines of code when you have 
-    // implemented the function yourself
-    (void)pList;
-    (void)pTable;
-    (void)startNode;
+{    
+    // Validation Checks
+    // pList must be valid
+    if (pList == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    // pTable must be valid
+    if (pTable == NULL){
+        return INVALID_INPUT_PARAMETER;
+    }
+    //start node must be between zero and the number of vertices
+    if (startNode < 0 || startNode > NUMBER_OF_VERTICES){
+        return INVALID_INPUT_PARAMETER;
+    }
+
+    printf("setting starting node\n"); 
+    // set the start node in the table to be of distance 0
+    pTable->table[startNode].distance = 0;
+
+    printf("calling recursion\n"); 
+    // call the recursive function to do the job
+    recDijsktraAlgorithmOnAdjacencyList(pList, pTable, startNode);
 
     // returning NOT_IMPLEMENTED until your own implementation provided
-    return NOT_IMPLEMENTED;
+    return SUCCESS;
+}
+
+// recursive implementation of Dijkstra's algorithm on an adjacency list
+// also I just noticed all the procedures spell dijkstra incorrectly
+void recDijsktraAlgorithmOnAdjacencyList(AdjacencyList *pList, DijkstraTable *pTable, int currentNode){
+    
+    // all arguments were validated before being passed in, no need to check them
+
+    // go through each edge to this node and process them
+
+    ListNode* pCurrentEdge = pList->adjacencyList[currentNode];
+
+    while (true){
+        //printf("checking edge %d\n", pCurrentEdge->destNode);
+        // have we checked the whole list?
+        if (pCurrentEdge == NULL)
+        {
+            // mark this node as visited
+            pTable->table[currentNode].visited = true;
+            // leave the loop
+            break;
+        }
+        // has this edge been visited?
+        if (pTable->table[pCurrentEdge->destNode].visited == true){
+            // skip it
+            pCurrentEdge = pCurrentEdge->next;
+            continue;
+        }
+        // process the edge
+        // if the distance across the edge + the distance to the current node is shorter than the recorded distance to dest
+        int distanceToDest = pTable->table[currentNode].distance + pCurrentEdge->weight;
+        if( distanceToDest < pTable->table[pCurrentEdge->destNode].distance){
+            pTable->table[pCurrentEdge->destNode].distance = distanceToDest;
+            pTable->table[pCurrentEdge->destNode].predecessor = currentNode;
+        }
+        
+        // try the next edge in the list
+        pCurrentEdge = pCurrentEdge->next;
+    }
+
+    // find the next node to process, by searching the table and picking the unvisited node with the shortest distance
+    // if all nodes have been visited then all connections have been processed and we can let the recursion collapse
+    int shortestDistance = VERY_LARGE_NUMBER;
+    int closestNode = -1;
+    for (int ii = 0; ii < NUMBER_OF_VERTICES; ii++){
+        // find the closest unvisited node
+        if (pTable->table[ii].visited == true){
+            continue;
+        }
+        if (pTable->table[ii].distance < shortestDistance)
+        {
+            // node found, set closest node to this and update shortest distance
+            shortestDistance = pTable->table[ii].distance;
+            closestNode = ii;
+        }
+        
+    }
+
+    // if a node is found call this function on the closest node
+    if (closestNode != -1){
+        recDijsktraAlgorithmOnAdjacencyList(pList, pTable, closestNode);
+    }
+    return;
 }
