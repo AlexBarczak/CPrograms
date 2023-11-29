@@ -1,0 +1,1 @@
+g++ main.cpp book.cpp user.cpp library.cpp -lncurses
