@@ -45,7 +45,7 @@ void book::setAvailablity(int availability){
 }
 
 ostream& operator<<(ostream &os, book *book){
-    os << book->ISBN << " \t" << book->title << " \t" << book->author << " \t";
+    os << book->ISBN << " \"" << book->title << "\" \"" << book->author << "\" ";
     os << to_string(book->availability);
     return os;
 }

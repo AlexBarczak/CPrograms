@@ -15,16 +15,16 @@ user::user(int &userID, string &name, vector<book*> &borrowedBooks){
     this->borrowedBooks = borrowedBooks;
 }
 
-user::~user(){
-    
-}
-
 int user::getUserID(){
     return this->userID;
 }
 
 string user::getUserName(){
     return this->name;
+}
+
+vector<book*> user::getBorrowedBooks(){
+    return this->borrowedBooks;
 }
 
 void user::setUserName(string &name){
@@ -63,6 +63,7 @@ void user::returnBook(book* book){
     {
         if (*current == book)
         {
+            (*current)->setAvailablity((*current)->getAvailability()+1);
             this->borrowedBooks.erase(current);
             return;
         }
