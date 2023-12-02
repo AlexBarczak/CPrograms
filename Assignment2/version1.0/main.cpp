@@ -59,226 +59,237 @@ string getName(){
     }
 }
 
+void browseInventory(){
+    vector<book*> foundBooks;
+    string searchString;
+
+    cout << "please enter a search string, or enter nothing if you wish to see all items" << endl;
+    
+    cin.ignore();
+    getline(cin, searchString);
+
+    foundBooks = lib->searchByTitle(foundBooks, searchString);
+
+    cout << "here are our items displayed in the format" << endl
+        << "ISBN " << "\t\t\tTitle " << "\t\t\tAuthor " << "\t\tAmount in stock" << endl;
+    
+    auto current = foundBooks.begin();
+    auto end = foundBooks.end();
+
+    while (current != end)
+    {
+        cout << *current << endl;
+        current = next(current);
+    }
+}
+
 void userSignIn(){
-    // if current user not defined, get the user
-    if (currentUser == nullptr)
+    // if current user is defined, skip function
+    if (currentUser != nullptr){return;}
+
+    cout << endl 
+        << "Welcome to the library\n"
+        << "What would you like to do:\n"
+        << "1. show all user data\n"
+        << "2. browse inventory\n"
+        << "3. sign in with your user ID\n"
+        << "4. open an account with the library\n"
+        << "5. add a book\n"
+        << "6. remove a book\n"
+        << "7. quit the program" << endl;
+
+    string action;
+    cin >> action;
+
+    // show all users and borrowed out book ISBNs
+    if (action == "1")
+    {
+        auto current = lib->getUsers().begin();
+        auto end = lib->getUsers().end();
+
+        while (current != end)
+        {
+            cout << *current << endl;
+            current = next(current);
+        }
+    }
+    // browse available books
+    else if (action == "2")
+        browseInventory();
+    // sign in with your user id
+    else if (action == "3")
     {
         while (true)
         {
-                cout << endl 
-                << "Welcome to the library\n"
-                << "What would you like to do:\n"
-                << "1. show all user data\n"
-                << "2. show inventory\n"
-                << "3. sign in with your user ID\n"
-                << "4. open an account with the library\n"
-                << "5. add a book\n"
-                << "6. remove a book\n"
-                << "7. quit the program" << endl;
+            cout << "enter your user ID" << endl;
+            cout << "or enter '-1' to cancel the action" << endl;
+            string input;
+            user* puser;
 
-            string action;
-            cin >> action;
-
-            // show all users and borrowed out book ISBNs
-            if (action == "1")
+            cin >> input;
+            if (input == "-1")
             {
-                auto current = lib->getUsers().begin();
-                auto end = lib->getUsers().end();
-
-                while (current != end)
-                {
-                    cout << *current << endl;
-                    current = next(current);
-                }
+                userSignIn();
+                return;
             }
-            // show all available books
-            else if (action == "2")
+            
+            try
             {
-                auto current = lib->getBooks().begin();
-                auto end = lib->getBooks().end();
-
-                while (current != end)
-                {
-                    cout << *current << endl;
-                    current = next(current);
-                }
+                int id = stoi(input);
+                puser = lib->getUser(id);
             }
-            // sign in with your uesr id
-            else if (action == "3")
+            catch(const std::out_of_range& e)
             {
-                while (true)
-                {
-                    cout << "enter your user ID" << endl;
-                    cout << "or enter '-1' to cancel the action" << endl;
-                    string input;
-                    user* puser;
-
-                    cin >> input;
-                    if (input == "-1")
-                    {
-                        userSignIn();
-                        return;
-                    }
-                    
-                    try
-                    {
-                        int id = stoi(input);
-                        puser = lib->getUser(id);
-                    }
-                    catch(const std::out_of_range& e)
-                    {
-                        cout << "your id is out of the possible range of values" << endl << endl;
-                        continue;
-                    }
-                    catch(const std::invalid_argument& e)
-                    {
-                        string error = e.what();
-                        if (error == "stoi")
-                        {
-                            cout << "that is not a valid number id" << endl;
-                        }else{
-                            cout << error << endl;
-                        }
-                        cout << endl;
-                        continue;
-                    }
-                    catch(const std::exception& e)
-                    {
-                        cout << "something went wrong: " << e.what() << endl << endl;
-                        continue;
-                    }
-                    currentUser = puser;
-                    return;
-                }
+                cout << "your id is out of the possible range of values" << endl << endl;
+                continue;
             }
-            // open an account with the library
-            else if (action == "4")
+            catch(const std::invalid_argument& e)
             {
-                // sign up
-                // ask the user for their name and assign them an ID
-
-                int userID;
-                string name;
-                vector<book*> books;
-
-                // as the user details are read in top to bottom and are stored in order of userid
-                // we can ensure that we can generate a unique id so long as it is one plus the largest 
-                // id among the ones on the file
-                // as vector pushes each user to the end of the structure as it loads each in
-                // the end of the vector hold the user with the largest user id
-                userID = (lib->getUsers().back())->getUserID() + 1;
-                name = getName();
-
-                user* newUser = new user(userID, name, books);
-                lib->addUser(newUser);
-                currentUser = newUser;
-
-                ofstream userFile;
-                userFile.open("users.txt", ios_base::app);
-                userFile << newUser << endl; 
-                userFile.close();
-
-                cout << "Welcome " << name << " you are now registered under userID: " << userID << endl;
-                cout << "and are now signed in" << endl << endl;
+                string error = e.what();
+                if (error == "stoi")
+                {
+                    cout << "that is not a valid number id" << endl;
+                }else{
+                    cout << error << endl;
+                }
+                cout << endl;
+                continue;
             }
-            // add a book
-            else if (action == "5")
+            catch(const std::exception& e)
             {
-                string ISBN;
-                string Title;
-                string Author;
-
-                cout << "what is the ISBN of the book?\n";
-                cin >> ISBN;
-
-                book* pbook;
-                bool bookExists = true;
-
-                try
-                {
-                    pbook = lib->getBook(ISBN);
-                }
-                catch(const std::exception& e)
-                {
-                    bookExists = false;
-                }
-
-                if (bookExists)
-                {
-                    cout << "this item is already recorded in the library\n"
-                        << "do you wish to donate another copy?" << endl;
-                    
-                    if (getYesOrNo() == 'y')
-                    {
-                        pbook->setAvailablity(pbook->getAvailability()+1);
-                        cout << "a copy of " << pbook->getTitle() << " has been added" << endl;
-                    }
-                }
-                
-                cout << "what is the book's title?";
-                getline(cin, Title);
-
-                cout << "who is the book's Author?";
-                getline(cin, Author);
-
-                pbook = new book(Title, Author, ISBN, 1);
+                cout << "something went wrong: " << e.what() << endl << endl;
+                continue;
             }
-            // remove a book
-            else if (action == "6")
+            currentUser = puser;
+            return;
+        }
+    }
+    // open an account with the library
+    else if (action == "4")
+    {
+        // sign up
+        // ask the user for their name and assign them an ID
+
+        int userID;
+        string name;
+        vector<book*> books;
+
+        // as the user details are read in top to bottom and are stored in order of userid
+        // we can ensure that we can generate a unique id so long as it is one plus the largest 
+        // id among the ones on the file
+        // as vector pushes each user to the end of the structure as it loads each in
+        // the end of the vector hold the user with the largest user id
+        userID = (lib->getUsers().back())->getUserID() + 1;
+        name = getName();
+
+        user* newUser = new user(userID, name, books);
+        lib->addUser(newUser);
+        currentUser = newUser;
+
+        ofstream userFile;
+        userFile.open("users.txt", ios_base::app);
+        userFile << newUser << endl; 
+        userFile.close();
+
+        cout << "Welcome " << name << " you are now registered under userID: " << userID << endl;
+        cout << "and are now signed in" << endl << endl;
+    }
+    // add a book
+    else if (action == "5")
+    {
+        string ISBN;
+        string Title;
+        string Author;
+
+        cout << "what is the ISBN of the book?\n";
+        cin >> ISBN;
+
+        book* pbook;
+        bool bookExists = true;
+
+        try
+        {
+            pbook = lib->getBook(ISBN);
+        }
+        catch(const std::exception& e)
+        {
+            bookExists = false;
+        }
+
+        if (bookExists)
+        {
+            cout << "this item is already recorded in the library\n"
+                << "do you wish to donate another copy?" << endl;
+            
+            if (getYesOrNo() == 'y')
             {
-                cout << "enter the ISBN of the item you want to remove:" << endl;
-                string ISBN;
-                cin >> ISBN;
-
-                // check the book ISBN is valid
-                book* pbook;
-
-                try
-                {
-                    pbook = lib->getBook(ISBN);
-                }
-                catch(const std::exception& e)
-                {
-                    cout << "no such ISBN in our library";
-                    return;
-                }
-
-                // if the book is borrowed out by anyone, we cannot delete it
-                auto currentUserIt = lib->getUsers().begin();
-                auto endUserIt = lib->getUsers().end();
-
-                while (currentUserIt != endUserIt)
-                {
-                    if ((*currentUserIt)->hasBorrowed(pbook))
-                    {
-                        cout << "cannot remove a book while it is borrowed out\n"
-                            << pbook->getISBN() << " is borrowed out by " << (*currentUserIt)->getUserName() << endl;
-                        return;
-                    }
-                }
-
-                // erase the book from the vector
-                auto currentBook = lib->getBooks().begin();
-                auto endBook = lib->getBooks().end();
-
-                while (currentBook != endBook)
-                {
-                    if (*currentBook == pbook)
-                    {
-                        lib->getBooks().erase(currentBook);
-                        delete pbook;
-                        lib->saveBooks();
-                        return;
-                    }
-                    currentBook = next(currentBook);
-                }
+                pbook->setAvailablity(pbook->getAvailability()+1);
+                cout << "a copy of " << pbook->getTitle() << " has been added" << endl;
             }
-            // quit the program
-            else if (action == "7")
+        }
+        
+        cout << "what is the book's title?";
+        getline(cin, Title);
+
+        cout << "who is the book's Author?";
+        getline(cin, Author);
+
+        pbook = new book(Title, Author, ISBN, 1);
+    }
+    // remove a book
+    else if (action == "6")
+    {
+        cout << "enter the ISBN of the item you want to remove:" << endl;
+        string ISBN;
+        cin >> ISBN;
+
+        // check the book ISBN is valid
+        book* pbook;
+
+        try
+        {
+            pbook = lib->getBook(ISBN);
+        }
+        catch(const std::exception& e)
+        {
+            cout << "no such ISBN in our library";
+            return;
+        }
+
+        // if the book is borrowed out by anyone, we cannot delete it
+        auto currentUserIt = lib->getUsers().begin();
+        auto endUserIt = lib->getUsers().end();
+
+        while (currentUserIt != endUserIt)
+        {
+            if ((*currentUserIt)->hasBorrowed(pbook))
             {
-                exit(EXIT_SUCCESS);
+                cout << "cannot remove a book while it is borrowed out\n"
+                    << pbook->getISBN() << " is borrowed out by " << (*currentUserIt)->getUserName() << endl;
+                return;
             }
-        }   
+        }
+
+        // erase the book from the vector
+        auto currentBook = lib->getBooks().begin();
+        auto endBook = lib->getBooks().end();
+
+        while (currentBook != endBook)
+        {
+            if (*currentBook == pbook)
+            {
+                lib->getBooks().erase(currentBook);
+                delete pbook;
+                lib->saveBooks();
+                return;
+            }
+            currentBook = next(currentBook);
+        }
+    }
+    // quit the program
+    else if (action == "7")
+    {
+        exit(EXIT_SUCCESS);
     }
 }
 
@@ -312,27 +323,7 @@ void mainMenu(){
     // display books
     case '1':
     {
-        vector<book*> foundBooks;
-        string searchString;
-
-        cout << "please enter a search string, or enter nothing if you wish to see all items" << endl;
-        
-        cin.ignore();
-        getline(cin, searchString);
-
-        foundBooks = lib->searchByTitle(foundBooks, searchString);
-
-        cout << "here are our items displayed in the format" << endl
-            << "ISBN " << "\t\t\tTitle " << "\t\t\tAuthor " << "\t\tAmount in stock" << endl;
-        
-        auto current = foundBooks.begin();
-        auto end = foundBooks.end();
-
-        while (current != end)
-        {
-            cout << *current << endl;
-            current = next(current);
-        }
+        browseInventory();
     }
         break;
     // borrow a book    
