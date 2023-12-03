@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "library.h"
+#include "item.h"
 #include "book.h"
 #include "user.h"
 
@@ -234,7 +235,7 @@ void userSignIn(){
         cout << "who is the book's Author?";
         getline(cin, Author);
 
-        pbook = new book(Title, Author, ISBN, 1);
+        pbook = new book(Title, Author, 1, ISBN);
     }
     // remove a book
     else if (action == "6")

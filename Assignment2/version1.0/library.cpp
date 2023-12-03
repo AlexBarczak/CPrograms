@@ -7,6 +7,8 @@
 #include "library.h"
 #include "user.h"
 #include "book.h"
+#include "audio.h"
+#include "film.h"
 
 using namespace std;
 
@@ -70,26 +72,33 @@ vector<book*>& library::getBooks(){
     return this->books;
 }
 
+vector<film*>& library::getFilms(){
+    return this->films;
+}
+
+vector<audio*>& library::getAudios(){
+    return this->audios;
+}
+
 vector<user*>& library::getUsers(){
     return this->users;
 }
 
-void library::loadBooks(){
+void library::loadItems(){
     string line;
     ifstream inventoryFile (INVENTORY_FILE);
     if (inventoryFile.is_open())
     {
         while (getline(inventoryFile, line))
         {
-            book* pbook;
-            string ISBN;
+            string id;
             string title;
             string author;
             int availability;
 
             int start = 0;
             int end = line.find_first_of(' ');
-            ISBN = line.substr(start, end - start);
+            id = line.substr(start, end - start);
 
             // set start of substring to position after whitespace and '"'
             start = end + 2;
@@ -105,8 +114,25 @@ void library::loadBooks(){
             end = line.find_first_of('\n', start);
             availability = stoi(line.substr(start, end-start));
 
-            pbook = new book(title, author, ISBN, availability);
-            this->addBook(pbook);
+            if (id[0] == 'f')
+            {
+                // read into film format
+                film* pfilm;
+                pfilm = new film(title, author, availability, id);
+
+            }else if (id[0] == 'a')
+            {
+                // read into audio format
+                audio* paudio;
+                paudio = new audio(title, author, availability, id);
+
+            }else{
+                // read into a book format
+                book* pbook;
+                pbook = new book(title, author, availability, id);
+
+                this->addBook(pbook);
+            }
         }
         inventoryFile.close();
     }
@@ -206,7 +232,7 @@ void library::saveUsers(){
 
 // items need to be loaded first
 void library::loadLibrary(){
-    loadBooks();
+    loadItems();
     loadUsers();
 }
 
