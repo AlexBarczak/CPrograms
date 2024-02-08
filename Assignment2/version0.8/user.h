@@ -27,9 +27,4 @@ public:
     friend ostream& operator<<(ostream &os, user* user);
 };
 
-template <book T>
-TemplateFunction(){
-
-}
-
 #endif
