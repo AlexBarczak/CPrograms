@@ -1,0 +1,1 @@
+AC22008 is the Multi Paradigm and Data Structures module focussing on C and C++
