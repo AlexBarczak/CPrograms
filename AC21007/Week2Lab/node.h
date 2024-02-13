@@ -5,24 +5,27 @@
 
 namespace search_infrastructure {
 
-
     template <typename DataStructure, typename Action>
     class Node
     {
     private:
-        DataStructure state;
-        Node<DataStructure> parentNode;
-        Action action;
+        DataStructure *state;
+        Node<DataStructure, Action> *parentNode;
+        Action *action;
         int pathCost;
     public:
-        static Node();
-        static Node(DataStructure state);
-        static ~Node();
+        Node();
+        Node(DataStructure *state);
+        ~Node();
     };
 
     template <class DataStructure, typename Action>
     Node<DataStructure, Action>::Node()
     {
+        state = nullptr;
+        parentNode = nullptr;
+        action = nullptr;
+        pathCost = 0;
     }    
 
     template <class DataStructure, typename Action>

@@ -4,12 +4,15 @@
 #include "node.h"
 
 namespace search_infrastructure {
-    
+
+    template <typename DataStructure, typename Action>
+    class Node;
+
     template<typename DataStructure, typename Action>
     class Problem
     {
     private:
-        Node<DataStructure, Action> initialState;
+        Node<DataStructure, Action> *initialState;
     public:
         Problem(/* args */);
         ~Problem();
